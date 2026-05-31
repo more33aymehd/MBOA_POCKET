@@ -188,17 +188,17 @@ export default function CommunityScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: '#F5F5F7' },
 
   /* placeholder — unused */ _: {},
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: Layout.screenPaddingHorizontal, paddingTop: 16, paddingBottom: 8,
   },
-  title: { fontSize: 22, fontWeight: '700', color: colors.text },
+  title: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
   notifBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center',
     ...Shadows.card,
   },
 
@@ -216,14 +216,14 @@ const styles = StyleSheet.create({
   },
   tab: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20 },
   tabActive: { backgroundColor: Colors.primary },
-  tabLabel: { fontSize: 14, fontWeight: '500', color: colors.textSecondary },
+  tabLabel: { fontSize: 14, fontWeight: '500', color: Colors.textPrimarySecondary },
   tabLabelActive: { color: Colors.white },
 
   scroll: { paddingHorizontal: Layout.screenPaddingHorizontal, paddingTop: 8, gap: 14 },
 
   /* Tontine Card */
   tontineCard: {
-    backgroundColor: colors.card, borderRadius: Radius.card,
+    backgroundColor: '#FFFFFF', borderRadius: Radius.card,
     padding: 16, gap: 8, ...Shadows.card,
   },
   tontineHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -243,19 +243,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
   },
   statutBadgeActive: { backgroundColor: Colors.accent },
-  statutText: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
+  statutText: { fontSize: 11, fontWeight: '600', color: Colors.textPrimarySecondary },
   statutTextActive: { color: Colors.primary },
 
-  tontineName: { fontSize: 16, fontWeight: '700', color: colors.text },
-  tontineInfo: { fontSize: 13, color: colors.textSecondary },
+  tontineName: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  tontineInfo: { fontSize: 13, color: Colors.textPrimarySecondary },
 
   tourInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   tourText: { fontSize: 13, color: Colors.secondary, fontWeight: '500' },
 
   duRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  duText: { fontSize: 13, color: colors.textSecondary },
+  duText: { fontSize: 13, color: Colors.textPrimarySecondary },
 
-  nbPaiements: { fontSize: 12, color: colors.textSecondary },
+  nbPaiements: { fontSize: 12, color: Colors.textPrimarySecondary },
 
   cardActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
   detailBtn: {
@@ -273,8 +273,8 @@ const styles = StyleSheet.create({
 
   /* Empty */
   empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
-  emptySub: { fontSize: 13, color: colors.textSecondary, textAlign: 'center', paddingHorizontal: 40 },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  emptySub: { fontSize: 13, color: Colors.textPrimarySecondary, textAlign: 'center', paddingHorizontal: 40 },
 
   /* FAB */
   fab: {
