@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { budgetService } from '../../services/budgetService';
 import { categoryService } from '../../services/categoryService';
 import { expenseService } from '../../services/expenseService';
@@ -34,6 +35,7 @@ function dateLabel(dateStr) {
 
 export default function HomeScreen({ navigation }) {
   const { user, token } = useAuth();
+  const { colors } = useTheme();
   const now = new Date();
 
   const [budget, setBudget] = useState(null);
@@ -80,7 +82,7 @@ export default function HomeScreen({ navigation }) {
     ? Math.min((totalDepense / budget.montantTotal) * 100, 100) : 0;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <CashReminderModal
         visible={showCashModal}
         onClose={() => setShowCashModal(false)}

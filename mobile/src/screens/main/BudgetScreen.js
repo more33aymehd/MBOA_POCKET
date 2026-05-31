@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { categoryService } from '../../services/categoryService';
 import { budgetService } from '../../services/budgetService';
 import { formatFCFA, nomMois } from '../../utils/format';
@@ -51,6 +52,7 @@ function ZoneCard({ cat, onPress }) {
 
 export default function BudgetScreen({ navigation }) {
   const { token } = useAuth();
+  const { colors } = useTheme();
   const now = new Date();
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee] = useState(now.getFullYear());
@@ -76,7 +78,7 @@ export default function BudgetScreen({ navigation }) {
   const totalRestant = totalAlloue - totalDepense;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={

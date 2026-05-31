@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { tontineService } from '../../services/tontineService';
 import { formatFCFA } from '../../utils/format';
 import { useFocusEffect } from '@react-navigation/native';
@@ -84,6 +85,7 @@ function TontineCard({ tontine, onPress, onPay }) {
 
 export default function CommunityScreen({ navigation }) {
   const { token } = useAuth();
+  const { colors } = useTheme();
   const [tontines, setTontines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -107,7 +109,7 @@ export default function CommunityScreen({ navigation }) {
   const displayed = activeTab === 'actives' ? actives : historique;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Mes tontines</Text>

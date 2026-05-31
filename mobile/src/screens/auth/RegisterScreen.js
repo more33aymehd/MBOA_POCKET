@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useResponsive } from '../../hooks/useResponsive';
 
 const FIELDS = [
@@ -19,6 +20,7 @@ const FIELDS = [
 
 export default function RegisterScreen({ navigation }) {
   const { login } = useAuth();
+  const { colors } = useTheme();
   const { isLandscape } = useResponsive();
   const [form, setForm] = useState({ nom: '', email: '', telephone: '', password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
@@ -99,7 +101,7 @@ export default function RegisterScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.card }]} edges={['top', 'bottom', 'left', 'right']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {isLandscape ? (
           <View style={styles.landscapeContainer}>

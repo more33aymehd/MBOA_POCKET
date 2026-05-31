@@ -1,10 +1,12 @@
 import React from 'react';
 import { View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import ChatBotFAB from '../components/ChatBotFAB';
 
 import SplashScreen from '../screens/SplashScreen';
@@ -24,6 +26,7 @@ import PropositionIAScreen from '../screens/budget/PropositionIAScreen';
 import AddCategoryScreen from '../screens/budget/AddCategoryScreen';
 import AddExpenseScreen from '../screens/budget/AddExpenseScreen';
 import ZoneDetailScreen from '../screens/budget/ZoneDetailScreen';
+import SaisieCashScreen from '../screens/budget/SaisieCashScreen';
 
 import ConfirmationScreen from '../screens/payment/ConfirmationScreen';
 import SuccesPaiementScreen from '../screens/payment/SuccesPaiementScreen';
@@ -34,38 +37,39 @@ import BonsPlansScreen from '../screens/deals/BonsPlansScreen';
 import DealDetailScreen from '../screens/deals/DealDetailScreen';
 import BilanMensuelScreen from '../screens/stats/BilanMensuelScreen';
 import NotificationsScreen from '../screens/notifications/NotificationsScreen';
-import SaisieCashScreen from '../screens/budget/SaisieCashScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const TAB_ICONS = {
-  Home: ['home', 'home-outline'],
-  Pay: ['send', 'send-outline'],
-  Budget: ['chart-pie', 'chart-pie'],
+  Home:      ['home', 'home-outline'],
+  Pay:       ['send', 'send-outline'],
+  Budget:    ['chart-pie', 'chart-pie'],
   Community: ['account-group', 'account-group-outline'],
-  Profile: ['account-circle', 'account-circle-outline'],
-};
-
-const TAB_LABELS = {
-  Home: 'Accueil',
-  Pay: 'Payer',
-  Budget: 'Budget',
-  Community: 'Communauté',
-  Profile: 'Profil',
+  Profile:   ['account-circle', 'account-circle-outline'],
 };
 
 function MainTabs() {
+  const { colors } = useTheme();
+  const { t } = useLanguage();
+
+  const TAB_LABELS = {
+    Home:      t('nav.home'),
+    Pay:       t('nav.pay'),
+    Budget:    t('nav.budget'),
+    Community: t('nav.community'),
+    Profile:   t('nav.profile'),
+  };
+
   return (
-    // View wrapper pour pouvoir positionner le FAB au-dessus de la tab bar
     <View style={{ flex: 1 }}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarActiveTintColor: Colors.primary,
-          tabBarInactiveTintColor: '#9CA3AF',
+          tabBarInactiveTintColor: colors.textSecondary,
           tabBarStyle: {
-            backgroundColor: Colors.white,
+            backgroundColor: colors.card,
             borderTopWidth: 0,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -2 },
@@ -88,16 +92,27 @@ function MainTabs() {
         <Tab.Screen name="Community" component={CommunityScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
-
-      {/* FAB ChatBot visible sur tous les onglets */}
       <ChatBotFAB />
     </View>
   );
 }
 
 export default function AppNavigator() {
+  const { isDark, colors } = useTheme();
+
+  const navTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
+      background: colors.background,
+      card: colors.card,
+      text: colors.text,
+      border: colors.border,
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -110,6 +125,7 @@ export default function AppNavigator() {
         <Stack.Screen name="AddCategory" component={AddCategoryScreen} />
         <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
         <Stack.Screen name="ZoneDetail" component={ZoneDetailScreen} />
+        <Stack.Screen name="SaisieCash" component={SaisieCashScreen} />
         <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
         <Stack.Screen name="SuccesPaiement" component={SuccesPaiementScreen} />
         <Stack.Screen name="Scanner" component={ScannerScreen} />
@@ -119,7 +135,6 @@ export default function AppNavigator() {
         <Stack.Screen name="DealDetail" component={DealDetailScreen} />
         <Stack.Screen name="BilanMensuel" component={BilanMensuelScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
-        <Stack.Screen name="SaisieCash" component={SaisieCashScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

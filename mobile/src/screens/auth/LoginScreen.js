@@ -8,10 +8,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
+  const { colors } = useTheme();
   const { isLandscape } = useResponsive();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -113,7 +115,7 @@ export default function LoginScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.card }]} edges={['top', 'bottom', 'left', 'right']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -121,7 +123,7 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.landscapeContainer}>
             {branding}
             <ScrollView
-              style={styles.flex}
+              style={[styles.flex, { backgroundColor: colors.card }]}
               contentContainerStyle={styles.landscapeScroll}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}>

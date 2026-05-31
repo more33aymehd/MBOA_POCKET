@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { categoryService } from '../../services/categoryService';
 import { formatFCFA } from '../../utils/format';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,6 +21,7 @@ const METHODS = [
 
 export default function PayScreen({ navigation }) {
   const { token } = useAuth();
+  const { colors } = useTheme();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState(null);
@@ -52,7 +54,7 @@ export default function PayScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Effectuer un paiement</Text>
         <TouchableOpacity

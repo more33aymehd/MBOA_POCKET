@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { notificationService } from '../../services/notificationService';
 
 const TABS = ['Toutes', 'Paiements', 'Budget', 'Tontines'];
@@ -60,6 +61,7 @@ function NotifCard({ notif, onPress, onDelete }) {
 
 export default function NotificationsScreen({ navigation }) {
   const { token } = useAuth();
+  const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState('Toutes');
   const [notifs, setNotifs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +111,7 @@ export default function NotificationsScreen({ navigation }) {
   const unreadCount = notifs.filter(n => !n.lue).length;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
