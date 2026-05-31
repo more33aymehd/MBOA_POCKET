@@ -1,25 +1,23 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, RefreshControl, ActivityIndicator, Share,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { statsService } from '../../services/statsService';
 import { formatFCFA, nomMois } from '../../utils/format';
 import { useFocusEffect } from '@react-navigation/native';
 
-// ── Donut Chart SVG ──
-function DonutChart({ categories, size = 160 }) {
+const CHART_COLORS = ['#1B8A5A', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
+
+function DonutChart({ categories, size = 160, colors }) {
   const r = size / 2 - 16;
   const cx = size / 2;
   const cy = size / 2;
   const circumference = 2 * Math.PI * r;
-
   const filtered = categories.filter(c => c.montantDepense > 0);
   const total = filtered.reduce((s, c) => s + c.montantDepense, 0);
 
@@ -33,21 +31,19 @@ function DonutChart({ categories, size = 160 }) {
     return seg;
   });
 
-  const colors = ['#1B8A5A', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
-
   if (filtered.length === 0) {
     return (
-      <View style={[styles.donutWrap, { width: size, height: size }]}>
-        <View style={[styles.donutEmpty, { width: size, height: size, borderRadius: size / 2 }]} />
-        <View style={styles.donutCenter}>
-          <Text style={styles.donutCenterText}>—</Text>
+      <View style={[s.donutWrap, { width: size, height: size }]}>
+        <View style={[s.donutEmpty, { width: size, height: size, borderRadius: size / 2, borderColor: colors.border }]} />
+        <View style={s.donutCenter}>
+          <Text style={[s.donutCenterText, { color: colors.textSecondary }]}>—</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={[styles.donutWrap, { width: size, height: size }]}>
+    <View style={[s.donutWrap, { width: size, height: size }]}>
       <Svg width={size} height={size}>
         <G rotation="-90" origin={`${cx},${cy}`}>
           {segments.map(({ cat, dash, gap, offset: off }, i) => (
@@ -55,7 +51,7 @@ function DonutChart({ categories, size = 160 }) {
               key={cat.categoryId ?? i}
               cx={cx} cy={cy} r={r}
               fill="none"
-              stroke={cat.couleur || colors[i % colors.length]}
+              stroke={cat.couleur || CHART_COLORS[i % CHART_COLORS.length]}
               strokeWidth={22}
               strokeDasharray={`${dash} ${gap}`}
               strokeDashoffset={-off}
@@ -63,52 +59,43 @@ function DonutChart({ categories, size = 160 }) {
           ))}
         </G>
       </Svg>
-      {/* Centre */}
-      <View style={styles.donutCenter}>
-        <Text style={styles.donutCenterPct}>{Math.round(filtered[0]?.pourcentageBudget ?? 0)}%</Text>
-        <Text style={styles.donutCenterLabel} numberOfLines={1}>{filtered[0]?.nom ?? ''}</Text>
+      <View style={s.donutCenter}>
+        <Text style={[s.donutCenterPct, { color: colors.text }]}>{Math.round(filtered[0]?.pourcentageBudget ?? 0)}%</Text>
+        <Text style={[s.donutCenterLabel, { color: colors.textSecondary }]} numberOfLines={1}>{filtered[0]?.nom ?? ''}</Text>
       </View>
     </View>
   );
 }
 
-// ── Bar Chart ──
-function BarChart({ categories }) {
+function BarChart({ categories, colors }) {
   const max = Math.max(...categories.map(c => Math.max(c.montantAlloue, c.montantDepense)), 1);
-  const colors = ['#1B8A5A', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
-
   return (
-    <View style={styles.barChart}>
-      <View style={styles.barsRow}>
+    <View style={s.barChart}>
+      <View style={s.barsRow}>
         {categories.slice(0, 6).map((cat, i) => {
           const hAlloue = ((cat.montantAlloue / max) * 80);
           const hDepense = ((cat.montantDepense / max) * 80);
-          const color = cat.couleur || colors[i % colors.length];
+          const color = cat.couleur || CHART_COLORS[i % CHART_COLORS.length];
           const over = cat.montantDepense > cat.montantAlloue;
           return (
-            <View key={cat.categoryId ?? i} style={styles.barGroup}>
-              <View style={styles.barBars}>
-                {/* Alloué (fond) */}
-                <View style={[styles.bar, styles.barAlloue, { height: Math.max(hAlloue, 4) }]} />
-                {/* Dépensé (avant) */}
-                <View style={[
-                  styles.bar, styles.barDepense,
-                  { height: Math.max(hDepense, 4), backgroundColor: over ? Colors.danger : color },
-                ]} />
+            <View key={cat.categoryId ?? i} style={s.barGroup}>
+              <View style={s.barBars}>
+                <View style={[s.bar, { height: Math.max(hAlloue, 4), backgroundColor: colors.border }]} />
+                <View style={[s.bar, { height: Math.max(hDepense, 4), backgroundColor: over ? Colors.danger : color }]} />
               </View>
-              <Text style={styles.barLabel} numberOfLines={1}>{cat.nom.slice(0, 5)}</Text>
+              <Text style={[s.barLabel, { color: colors.textSecondary }]} numberOfLines={1}>{cat.nom.slice(0, 5)}</Text>
             </View>
           );
         })}
       </View>
-      <View style={styles.barLegend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#E5E7EB' }]} />
-          <Text style={styles.legendText}>Alloué</Text>
+      <View style={s.barLegend}>
+        <View style={s.legendItem}>
+          <View style={[s.legendDot, { backgroundColor: colors.border }]} />
+          <Text style={[s.legendText, { color: colors.textSecondary }]}>Alloué</Text>
         </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
-          <Text style={styles.legendText}>Dépensé</Text>
+        <View style={s.legendItem}>
+          <View style={[s.legendDot, { backgroundColor: Colors.primary }]} />
+          <Text style={[s.legendText, { color: colors.textSecondary }]}>Dépensé</Text>
         </View>
       </View>
     </View>
@@ -117,6 +104,7 @@ function BarChart({ categories }) {
 
 export default function BilanMensuelScreen({ navigation }) {
   const { token } = useAuth();
+  const { colors } = useTheme();
   const now = new Date();
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee, setAnnee] = useState(now.getFullYear());
@@ -152,36 +140,35 @@ export default function BilanMensuelScreen({ navigation }) {
       + `Revenu : ${formatFCFA(stats.revenuMensuel)}\n`
       + `Dépensé : ${formatFCFA(stats.totalDepense)}\n`
       + `Restant : ${formatFCFA(stats.montantRestant)}\n`
-      + `Épargne : ${formatFCFA(stats.epargnRealisee)}\n\n`
-      + (stats.pointsForts?.map(p => `✅ ${p}`).join('\n') ?? '');
+      + `Épargne : ${formatFCFA(stats.epargnRealisee)}\n`;
     await Share.share({ message: txt });
   }
 
   const isCurrentMonth = mois === now.getMonth() + 1 && annee === now.getFullYear();
   const cats = stats?.categories ?? [];
-  const COLORS_MAP = ['#1B8A5A', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[s.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Bilan Mensuel</Text>
+        <Text style={[s.headerTitle, { color: colors.text }]}>Bilan Mensuel</Text>
         <TouchableOpacity onPress={handleShare}>
-          <MaterialCommunityIcons name="share-variant-outline" size={22} color={Colors.textPrimary} />
+          <MaterialCommunityIcons name="share-variant-outline" size={22} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Sélecteur de mois */}
-      <View style={styles.monthSelector}>
-        <TouchableOpacity onPress={prevMois} style={styles.arrowBtn}>
-          <MaterialCommunityIcons name="chevron-left" size={22} color={Colors.textPrimary} />
+      <View style={[s.monthSelector, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+        <TouchableOpacity onPress={prevMois} style={s.arrowBtn}>
+          <MaterialCommunityIcons name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.monthLabel}>{nomMois(mois)} {annee}</Text>
-        <TouchableOpacity onPress={nextMois} style={styles.arrowBtn} disabled={isCurrentMonth}>
-          <MaterialCommunityIcons name="chevron-right" size={22} color={isCurrentMonth ? '#D1D5DB' : Colors.textPrimary} />
+        <Text style={[s.monthLabel, { color: colors.text }]}>{nomMois(mois)} {annee}</Text>
+        <TouchableOpacity onPress={nextMois} style={s.arrowBtn} disabled={isCurrentMonth}>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={isCurrentMonth ? colors.border : colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -193,69 +180,54 @@ export default function BilanMensuelScreen({ navigation }) {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.primary} />}>
 
           {/* Hero Card Gradient */}
-          <LinearGradient colors={['#1B8A5A', '#156B46']} style={styles.heroCard} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}>
-            {isCurrentMonth ? (
-              <View style={styles.heroBadge}>
-                <MaterialCommunityIcons name="clock-outline" size={12} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.heroBadgeText}>Mois en cours</Text>
-              </View>
-            ) : (
-              <View style={styles.heroBadge}>
-                <MaterialCommunityIcons name="check-circle" size={12} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.heroBadgeText}>Mois terminé</Text>
-              </View>
-            )}
-
-            <View style={styles.heroStats}>
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatLabel}>Revenu</Text>
-                <Text style={styles.heroStatVal}>{stats?.revenuMensuel ? (stats.revenuMensuel / 1000).toFixed(0) + 'K' : '—'}</Text>
-              </View>
-              <View style={styles.heroStatDivider} />
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatLabel}>Dépensé</Text>
-                <Text style={styles.heroStatVal}>{stats?.totalDepense ? (stats.totalDepense / 1000).toFixed(0) + 'K' : '—'}</Text>
-              </View>
-              <View style={styles.heroStatDivider} />
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatLabel}>Épargne</Text>
-                <Text style={styles.heroStatVal}>
-                  {stats?.epargnRealisee != null ? (Math.max(stats.epargnRealisee, 0) / 1000).toFixed(0) + 'K' : '—'}
-                  {stats?.epargnRealisee > 0 ? ' 💰' : ''}
-                </Text>
-              </View>
+          <LinearGradient colors={['#1B8A5A', '#156B46']} style={s.heroCard} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}>
+            <View style={s.heroBadge}>
+              <MaterialCommunityIcons name={isCurrentMonth ? 'clock-outline' : 'check-circle'} size={12} color="rgba(255,255,255,0.8)" />
+              <Text style={s.heroBadgeText}>{isCurrentMonth ? 'Mois en cours' : 'Mois terminé'}</Text>
             </View>
-
-            <Text style={styles.heroNote}>Montants en FCFA</Text>
-
-            {/* Barre de consommation */}
+            <View style={s.heroStats}>
+              {[
+                { label: 'Revenu',  val: stats?.revenuMensuel },
+                { label: 'Dépensé', val: stats?.totalDepense },
+                { label: 'Épargne', val: stats?.epargnRealisee != null ? Math.max(stats.epargnRealisee, 0) : null },
+              ].map((item, i) => (
+                <React.Fragment key={item.label}>
+                  {i > 0 && <View style={s.heroStatDivider} />}
+                  <View style={s.heroStat}>
+                    <Text style={s.heroStatLabel}>{item.label}</Text>
+                    <Text style={s.heroStatVal}>{item.val != null ? (item.val / 1000).toFixed(0) + 'K' : '—'}</Text>
+                  </View>
+                </React.Fragment>
+              ))}
+            </View>
+            <Text style={s.heroNote}>Montants en FCFA</Text>
             {stats?.revenuMensuel > 0 && (
-              <View style={styles.heroBar}>
-                <View style={[styles.heroBarFill, {
+              <View style={s.heroBar}>
+                <View style={[s.heroBarFill, {
                   width: `${Math.min(stats.tauxUtilisation, 100)}%`,
                   backgroundColor: stats.tauxUtilisation > 90 ? Colors.danger : stats.tauxUtilisation > 70 ? Colors.warning : '#4ADE80',
                 }]} />
               </View>
             )}
             {stats?.evolutionPct !== undefined && (
-              <Text style={styles.heroEvol}>
+              <Text style={s.heroEvol}>
                 {stats.evolutionPct > 0 ? `↑ +${stats.evolutionPct}%` : stats.evolutionPct < 0 ? `↓ ${stats.evolutionPct}%` : '= Stable'} vs mois précédent
               </Text>
             )}
           </LinearGradient>
 
-          {/* Donut + Légende */}
+          {/* Donut */}
           {cats.length > 0 && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Répartition des dépenses</Text>
-              <View style={styles.donutSection}>
-                <DonutChart categories={cats} size={150} />
-                <View style={styles.legend}>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Text style={[s.cardTitle, { color: colors.text }]}>Répartition des dépenses</Text>
+              <View style={s.donutSection}>
+                <DonutChart categories={cats} size={150} colors={colors} />
+                <View style={s.legend}>
                   {cats.filter(c => c.montantDepense > 0).slice(0, 6).map((cat, i) => (
-                    <View key={cat.categoryId ?? i} style={styles.legendRow}>
-                      <View style={[styles.legendDotBig, { backgroundColor: cat.couleur || COLORS_MAP[i % COLORS_MAP.length] }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>{cat.nom}</Text>
-                      <Text style={styles.legendPct}>{cat.pourcentageBudget?.toFixed(0)}%</Text>
+                    <View key={cat.categoryId ?? i} style={s.legendRow}>
+                      <View style={[s.legendDotBig, { backgroundColor: cat.couleur || CHART_COLORS[i % CHART_COLORS.length] }]} />
+                      <Text style={[s.legendName, { color: colors.text }]} numberOfLines={1}>{cat.nom}</Text>
+                      <Text style={[s.legendPct, { color: colors.textSecondary }]}>{cat.pourcentageBudget?.toFixed(0)}%</Text>
                     </View>
                   ))}
                 </View>
@@ -263,62 +235,57 @@ export default function BilanMensuelScreen({ navigation }) {
             </View>
           )}
 
-          {/* Points forts */}
+          {/* Points forts / faibles */}
           {((stats?.pointsForts?.length > 0) || (stats?.pointsFaibles?.length > 0)) && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Points forts</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Text style={[s.cardTitle, { color: colors.text }]}>Points clés</Text>
               {(stats?.pointsForts ?? []).map((p, i) => (
-                <View key={i} style={styles.pointRow}>
+                <View key={i} style={s.pointRow}>
                   <MaterialCommunityIcons name="check-circle" size={20} color={Colors.success} />
-                  <Text style={styles.pointText}>{p}</Text>
+                  <Text style={[s.pointText, { color: colors.text }]}>{p}</Text>
                 </View>
               ))}
               {(stats?.pointsFaibles ?? []).map((p, i) => (
-                <View key={i} style={styles.pointRow}>
+                <View key={i} style={s.pointRow}>
                   <MaterialCommunityIcons name="alert-circle" size={20} color={Colors.warning} />
-                  <Text style={styles.pointText}>{p}</Text>
+                  <Text style={[s.pointText, { color: colors.text }]}>{p}</Text>
                 </View>
               ))}
-              {(stats?.pointsForts?.length === 0 && stats?.pointsFaibles?.length === 0) && (
-                <Text style={styles.noPoints}>Pas encore assez de données ce mois.</Text>
+              {!(stats?.pointsForts?.length) && !(stats?.pointsFaibles?.length) && (
+                <Text style={[s.noPoints, { color: colors.textSecondary }]}>Pas encore assez de données ce mois.</Text>
               )}
             </View>
           )}
 
-          {/* Bar Chart comparaison */}
+          {/* Bar Chart */}
           {cats.length > 0 && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Budget par zone</Text>
-              <BarChart categories={cats} />
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Text style={[s.cardTitle, { color: colors.text }]}>Budget par zone</Text>
+              <BarChart categories={cats} colors={colors} />
             </View>
           )}
 
           {/* Détail catégories */}
           {cats.length > 0 && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Détail par zone</Text>
+            <View style={[s.card, { backgroundColor: colors.card }]}>
+              <Text style={[s.cardTitle, { color: colors.text }]}>Détail par zone</Text>
               {cats.map((cat, i) => {
-                const color = cat.couleur || COLORS_MAP[i % COLORS_MAP.length];
+                const color = cat.couleur || CHART_COLORS[i % CHART_COLORS.length];
                 const over = cat.progressPercent > 100;
                 return (
-                  <View key={cat.categoryId ?? i} style={[styles.catRow, i > 0 && { borderTopWidth: 1, borderTopColor: '#F3F4F6' }]}>
-                    <View style={[styles.catIconBg, { backgroundColor: color + '20' }]}>
-                      <Text style={styles.catEmoji}>{cat.icone}</Text>
+                  <View key={cat.categoryId ?? i} style={[s.catRow, i > 0 && [s.catBorder, { borderTopColor: colors.borderLight }]]}>
+                    <View style={[s.catIconBg, { backgroundColor: color + '20' }]}>
+                      <Text style={s.catEmoji}>{cat.icone}</Text>
                     </View>
-                    <View style={styles.catInfo}>
-                      <View style={styles.catTop}>
-                        <Text style={styles.catNom}>{cat.nom}</Text>
-                        <Text style={[styles.catPct, { color: over ? Colors.danger : color }]}>
-                          {cat.progressPercent?.toFixed(0)}%
-                        </Text>
+                    <View style={s.catInfo}>
+                      <View style={s.catTop}>
+                        <Text style={[s.catNom, { color: colors.text }]}>{cat.nom}</Text>
+                        <Text style={[s.catPct, { color: over ? Colors.danger : color }]}>{cat.progressPercent?.toFixed(0)}%</Text>
                       </View>
-                      <View style={styles.catBar}>
-                        <View style={[styles.catBarFill, {
-                          width: `${Math.min(cat.progressPercent, 100)}%`,
-                          backgroundColor: over ? Colors.danger : color,
-                        }]} />
+                      <View style={[s.catBar, { backgroundColor: colors.border }]}>
+                        <View style={[s.catBarFill, { width: `${Math.min(cat.progressPercent, 100)}%`, backgroundColor: over ? Colors.danger : color }]} />
                       </View>
-                      <Text style={styles.catAmounts}>
+                      <Text style={[s.catAmounts, { color: colors.textSecondary }]}>
                         {formatFCFA(cat.montantDepense)} / {formatFCFA(cat.montantAlloue)}
                       </Text>
                     </View>
@@ -328,10 +295,9 @@ export default function BilanMensuelScreen({ navigation }) {
             </View>
           )}
 
-          {/* Bouton mois suivant */}
           {!isCurrentMonth && (
-            <TouchableOpacity style={styles.nextMonthBtn} onPress={nextMois}>
-              <Text style={styles.nextMonthLabel}>Voir le mois de {nomMois(mois === 12 ? 1 : mois + 1)}</Text>
+            <TouchableOpacity style={[s.nextMonthBtn, { backgroundColor: colors.card }]} onPress={nextMois}>
+              <Text style={s.nextMonthLabel}>Voir le mois de {nomMois(mois === 12 ? 1 : mois + 1)}</Text>
               <MaterialCommunityIcons name="chevron-right" size={18} color={Colors.primary} />
             </TouchableOpacity>
           )}
@@ -343,29 +309,14 @@ export default function BilanMensuelScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F5F5F7' },
-
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Layout.screenPaddingHorizontal, paddingVertical: 14,
-    backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
-  },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-
-  monthSelector: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 16, paddingVertical: 10,
-    backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
-  },
+const s = StyleSheet.create({
+  safe: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Layout.screenPaddingHorizontal, paddingVertical: 14, borderBottomWidth: 1 },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
+  monthSelector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, paddingVertical: 10, borderBottomWidth: 1 },
   arrowBtn: { padding: 4 },
-  monthLabel: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, minWidth: 140, textAlign: 'center' },
-
-  /* Hero Card */
-  heroCard: {
-    marginHorizontal: Layout.screenPaddingHorizontal,
-    marginTop: 16, borderRadius: 20, padding: 18, gap: 10,
-  },
+  monthLabel: { fontSize: 16, fontWeight: '700', minWidth: 140, textAlign: 'center' },
+  heroCard: { marginHorizontal: Layout.screenPaddingHorizontal, marginTop: 16, borderRadius: 20, padding: 18, gap: 10 },
   heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   heroBadgeText: { fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: '500' },
   heroStats: { flexDirection: 'row', alignItems: 'center' },
@@ -377,68 +328,44 @@ const styles = StyleSheet.create({
   heroBar: { height: 5, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
   heroBarFill: { height: '100%', borderRadius: 3 },
   heroEvol: { fontSize: 11, color: 'rgba(255,255,255,0.6)', textAlign: 'center' },
-
-  /* Cards */
-  card: {
-    backgroundColor: Colors.white, borderRadius: Radius.card,
-    marginHorizontal: Layout.screenPaddingHorizontal,
-    marginTop: 14, padding: 16, gap: 14, ...Shadows.card,
-  },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
-
-  /* Donut */
+  card: { borderRadius: Radius.card, marginHorizontal: Layout.screenPaddingHorizontal, marginTop: 14, padding: 16, gap: 14, ...Shadows.card },
+  cardTitle: { fontSize: 15, fontWeight: '700' },
   donutSection: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   donutWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
-  donutEmpty: { borderWidth: 22, borderColor: '#E5E7EB' },
+  donutEmpty: { borderWidth: 22 },
   donutCenter: { position: 'absolute', alignItems: 'center' },
-  donutCenterPct: { fontSize: 18, fontWeight: '800', color: Colors.textPrimary },
-  donutCenterLabel: { fontSize: 10, color: Colors.textSecondary, maxWidth: 70, textAlign: 'center' },
-  donutCenterText: { fontSize: 20, color: Colors.textSecondary },
-
-  /* Légende donut */
+  donutCenterPct: { fontSize: 18, fontWeight: '800' },
+  donutCenterLabel: { fontSize: 10, maxWidth: 70, textAlign: 'center' },
+  donutCenterText: { fontSize: 20 },
   legend: { flex: 1, gap: 6 },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendDotBig: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  legendName: { flex: 1, fontSize: 12, color: Colors.textPrimary },
-  legendPct: { fontSize: 12, fontWeight: '700', color: Colors.textSecondary },
-
-  /* Points forts/faibles */
+  legendName: { flex: 1, fontSize: 12 },
+  legendPct: { fontSize: 12, fontWeight: '700' },
   pointRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  pointText: { flex: 1, fontSize: 13, color: Colors.textPrimary, lineHeight: 20 },
-  noPoints: { fontSize: 13, color: Colors.textSecondary, textAlign: 'center' },
-
-  /* Bar Chart */
+  pointText: { flex: 1, fontSize: 13, lineHeight: 20 },
+  noPoints: { fontSize: 13, textAlign: 'center' },
   barChart: { gap: 10 },
   barsRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 90 },
   barGroup: { flex: 1, alignItems: 'center', gap: 4 },
   barBars: { flexDirection: 'row', alignItems: 'flex-end', gap: 2 },
   bar: { width: 12, borderRadius: 4, minHeight: 4 },
-  barAlloue: { backgroundColor: '#E5E7EB' },
-  barDepense: { backgroundColor: Colors.primary },
-  barLabel: { fontSize: 9, color: Colors.textSecondary, textAlign: 'center' },
+  barLabel: { fontSize: 9, textAlign: 'center' },
   barLegend: { flexDirection: 'row', justifyContent: 'center', gap: 20 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: Colors.textSecondary },
-
-  /* Détail catégories */
+  legendText: { fontSize: 11 },
   catRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  catBorder: { borderTopWidth: 1 },
   catIconBg: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   catEmoji: { fontSize: 18 },
   catInfo: { flex: 1, gap: 5 },
   catTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  catNom: { fontSize: 13, fontWeight: '600', color: Colors.textPrimary },
+  catNom: { fontSize: 13, fontWeight: '600' },
   catPct: { fontSize: 13, fontWeight: '700' },
-  catBar: { height: 5, backgroundColor: '#E8F5EE', borderRadius: 99, overflow: 'hidden' },
+  catBar: { height: 5, borderRadius: 99, overflow: 'hidden' },
   catBarFill: { height: '100%', borderRadius: 99 },
-  catAmounts: { fontSize: 11, color: Colors.textSecondary },
-
-  /* Navigation mois */
-  nextMonthBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, marginHorizontal: Layout.screenPaddingHorizontal, marginTop: 14,
-    backgroundColor: Colors.white, borderRadius: Radius.card,
-    padding: 16, ...Shadows.card,
-  },
+  catAmounts: { fontSize: 11 },
+  nextMonthBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginHorizontal: Layout.screenPaddingHorizontal, marginTop: 14, borderRadius: Radius.card, padding: 16, ...Shadows.card },
   nextMonthLabel: { fontSize: 14, fontWeight: '600', color: Colors.primary },
 });
