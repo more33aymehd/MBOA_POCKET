@@ -1,0 +1,30 @@
+spring.application.name=mboapocket_app
+
+# Server
+server.port=8080
+
+# MySQL — copie ce fichier en application.properties et remplis tes valeurs
+spring.datasource.url=jdbc:mysql://localhost:3306/mboapocket_dev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=TON_MOT_DE_PASSE_MYSQL
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.open-in-view=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+# JWT — génère une clé secrète longue et aléatoire
+jwt.secret=CHANGE_ME_LONG_RANDOM_SECRET_KEY
+jwt.expiration=86400000
+
+# Groq AI — https://console.groq.com/keys
+groq.api.key=VOTRE_CLE_GROQ
+groq.model=llama-3.3-70b-versatile
+
+# CAM PAY (Sandbox) — https://demo.campay.net
+campay.base-url=https://demo.campay.net/api
+campay.token=VOTRE_TOKEN_CAMPAY
+campay.app-id=VOTRE_APP_ID_CAMPAY
+campay.mock=true
