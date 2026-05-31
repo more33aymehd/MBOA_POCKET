@@ -56,6 +56,12 @@
           "color": "#1B8A5A",
           "sounds": []
         }
+      ],
+      [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": ""
+        }
       ]
     ]
   }
