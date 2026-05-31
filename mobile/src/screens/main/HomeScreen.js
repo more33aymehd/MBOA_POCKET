@@ -1,14 +1,12 @@
 import React, { useState, useCallback, useRef } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, RefreshControl, ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { budgetService } from '../../services/budgetService';
 import { categoryService } from '../../services/categoryService';
 import { expenseService } from '../../services/expenseService';
@@ -36,6 +34,7 @@ function dateLabel(dateStr) {
 export default function HomeScreen({ navigation }) {
   const { user, token } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const now = new Date();
 
   const [budget, setBudget] = useState(null);
@@ -82,7 +81,7 @@ export default function HomeScreen({ navigation }) {
     ? Math.min((totalDepense / budget.montantTotal) * 100, 100) : 0;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
       <CashReminderModal
         visible={showCashModal}
         onClose={() => setShowCashModal(false)}
@@ -90,113 +89,83 @@ export default function HomeScreen({ navigation }) {
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.primary} />
-        }>
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.primary} />}>
 
-        {/* ── Header ── */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Bonjour, {user?.nom?.split(' ')[0] ?? 'vous'} 👋</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.headerBtn}
-              onPress={() => navigation.navigate('BilanMensuel')}>
+        {/* Header */}
+        <View style={s.header}>
+          <Text style={[s.greeting, { color: colors.text }]}>
+            {t('home.greeting')}, {user?.nom?.split(' ')[0] ?? 'vous'} 👋
+          </Text>
+          <View style={s.headerActions}>
+            <TouchableOpacity style={[s.headerBtn, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('BilanMensuel')}>
               <MaterialCommunityIcons name="chart-pie" size={20} color={Colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerBtn}
-              onPress={() => navigation.navigate('Notifications')}>
-              <MaterialCommunityIcons name="bell-outline" size={20} color={Colors.textPrimary} />
+            <TouchableOpacity style={[s.headerBtn, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('Notifications')}>
+              <MaterialCommunityIcons name="bell-outline" size={20} color={colors.text} />
               {unreadCount > 0 && (
-                <View style={styles.notifBadge}>
-                  <Text style={styles.notifBadgeText}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
+                <View style={s.notifBadge}>
+                  <Text style={s.notifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
                 </View>
               )}
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* ── Hero Card ── */}
+        {/* Hero Card */}
         {loading ? (
           <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
         ) : budget ? (
-          <LinearGradient
-            colors={['#1B8A5A', '#126644']}
-            style={styles.heroCard}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}>
-
-            <Text style={styles.heroLabel}>
-              Budget du mois de {nomMois(now.getMonth() + 1)}
-            </Text>
-
-            {/* Montant restant — très grand et proéminent */}
-            <Text style={styles.heroRestant}>{formatFCFA(restant)}</Text>
-            <Text style={styles.heroSurTotal}>sur {formatFCFA(budget.montantTotal)}</Text>
-
-            {/* Barre de progression */}
-            <View style={styles.heroBarTrack}>
-              <View style={[styles.heroBarFill, {
-                width: `${pct}%`,
-                backgroundColor: pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#4ADE80',
-              }]} />
+          <LinearGradient colors={['#1B8A5A', '#126644']} style={s.heroCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <Text style={s.heroLabel}>{t('home.budgetMonth')} {nomMois(now.getMonth() + 1)}</Text>
+            <Text style={s.heroRestant}>{formatFCFA(restant)}</Text>
+            <Text style={s.heroSurTotal}>sur {formatFCFA(budget.montantTotal)}</Text>
+            <View style={s.heroBarTrack}>
+              <View style={[s.heroBarFill, { width: `${pct}%`, backgroundColor: pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#4ADE80' }]} />
             </View>
-
-            {/* Ligne bas : dépensé + épargne */}
-            <View style={styles.heroBottom}>
-              <View style={styles.heroStat}>
-                <Text style={styles.heroStatLabel}>Dépensé</Text>
-                <Text style={styles.heroStatValue}>{formatFCFA(totalDepense)}</Text>
+            <View style={s.heroBottom}>
+              <View style={s.heroStat}>
+                <Text style={s.heroStatLabel}>{t('home.spent')}</Text>
+                <Text style={s.heroStatValue}>{formatFCFA(totalDepense)}</Text>
               </View>
-              <View style={styles.heroStat}>
-                <Text style={[styles.heroStatLabel, { textAlign: 'right' }]}>Épargne</Text>
-                <Text style={[styles.heroStatValue, { textAlign: 'right' }]}>
-                  {formatFCFA(budget.objectifEpargne ?? 0)}
-                </Text>
+              <View style={s.heroStat}>
+                <Text style={[s.heroStatLabel, { textAlign: 'right' }]}>{t('home.savings')}</Text>
+                <Text style={[s.heroStatValue, { textAlign: 'right' }]}>{formatFCFA(budget.objectifEpargne ?? 0)}</Text>
               </View>
             </View>
           </LinearGradient>
         ) : (
-          <TouchableOpacity style={styles.setupCard} onPress={() => navigation.navigate('SetupBudget')}>
+          <TouchableOpacity style={[s.setupCard, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('SetupBudget')}>
             <MaterialCommunityIcons name="wallet-plus-outline" size={32} color={Colors.primary} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.setupTitle}>Configurer mon budget</Text>
-              <Text style={styles.setupSub}>Définissez votre revenu mensuel</Text>
+              <Text style={[s.setupTitle, { color: colors.text }]}>{t('home.setupBudget')}</Text>
+              <Text style={[s.setupSub, { color: colors.textSecondary }]}>{t('home.setupBudgetSub')}</Text>
             </View>
             <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.primary} />
           </TouchableOpacity>
         )}
 
-        {/* ── Mes zones ── */}
+        {/* Mes zones */}
         {categories.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Mes zones</Text>
+          <View style={s.section}>
+            <View style={s.sectionHeader}>
+              <Text style={[s.sectionTitle, { color: colors.text }]}>{t('home.myZones')}</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Budget')}>
-                <Text style={styles.seeAll}>Voir tout</Text>
+                <Text style={s.seeAll}>{t('home.seeAll')}</Text>
               </TouchableOpacity>
             </View>
-
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.zonesRow}>
+              <View style={s.zonesRow}>
                 {categories.slice(0, 5).map(cat => {
                   const catPct = Math.min(cat.progressPercent ?? 0, 100);
                   const barColor = progressColor(catPct);
                   return (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={styles.zoneChip}
-                      onPress={() => navigation.navigate('ZoneDetail', { id: cat.id })}>
-                      <Text style={styles.zoneChipIcon}>{cat.icone}</Text>
-                      <Text style={styles.zoneChipName} numberOfLines={1}>{cat.nom}</Text>
-                      <View style={styles.zoneChipBar}>
-                        <View style={[styles.zoneChipFill, { width: `${catPct}%`, backgroundColor: barColor }]} />
+                    <TouchableOpacity key={cat.id} style={[s.zoneChip, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('ZoneDetail', { id: cat.id })}>
+                      <Text style={s.zoneChipIcon}>{cat.icone}</Text>
+                      <Text style={[s.zoneChipName, { color: colors.text }]} numberOfLines={1}>{cat.nom}</Text>
+                      <View style={[s.zoneChipBar, { backgroundColor: colors.border }]}>
+                        <View style={[s.zoneChipFill, { width: `${catPct}%`, backgroundColor: barColor }]} />
                       </View>
-                      <Text style={styles.zoneChipAmt}>{formatFCFA(cat.montantAlloue - (cat.montantDepense ?? 0))}</Text>
+                      <Text style={[s.zoneChipAmt, { color: colors.textSecondary }]}>{formatFCFA(cat.montantAlloue - (cat.montantDepense ?? 0))}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -205,40 +174,35 @@ export default function HomeScreen({ navigation }) {
           </View>
         )}
 
-        {/* ── Activité récente ── */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Activité récente</Text>
+        {/* Activité récente */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>{t('home.recentActivity')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Budget')}>
-              <Text style={styles.seeAll}>Voir tout</Text>
+              <Text style={s.seeAll}>{t('home.seeAll')}</Text>
             </TouchableOpacity>
           </View>
-
           {recentExpenses.length === 0 ? (
-            <View style={styles.emptyActivity}>
-              <MaterialCommunityIcons name="receipt-text-outline" size={32} color={Colors.textSecondary} />
-              <Text style={styles.emptyActivityText}>Aucune dépense ce mois</Text>
+            <View style={s.emptyActivity}>
+              <MaterialCommunityIcons name="receipt-text-outline" size={32} color={colors.textSecondary} />
+              <Text style={[s.emptyActivityText, { color: colors.textSecondary }]}>{t('home.noExpense')}</Text>
             </View>
           ) : (
-            <View style={styles.activityCard}>
+            <View style={[s.activityCard, { backgroundColor: colors.card }]}>
               {recentExpenses.map((exp, i) => (
-                <View
-                  key={exp.id ?? i}
-                  style={[styles.activityRow, i < recentExpenses.length - 1 && styles.activityBorder]}>
-                  <View style={styles.activityIconBg}>
-                    <Text style={styles.activityEmoji}>{exp.categoryIcone ?? '💰'}</Text>
+                <View key={exp.id ?? i} style={[s.activityRow, i < recentExpenses.length - 1 && [s.activityBorder, { borderBottomColor: colors.borderLight }]]}>
+                  <View style={[s.activityIconBg, { backgroundColor: colors.accent ?? Colors.accent }]}>
+                    <Text style={s.activityEmoji}>{exp.categoryIcone ?? '💰'}</Text>
                   </View>
-                  <View style={styles.activityMeta}>
-                    <Text style={styles.activityDesc} numberOfLines={1}>
+                  <View style={s.activityMeta}>
+                    <Text style={[s.activityDesc, { color: colors.text }]} numberOfLines={1}>
                       {exp.description || exp.categoryNom || 'Dépense'}
                     </Text>
-                    <Text style={styles.activitySub}>
+                    <Text style={[s.activitySub, { color: colors.textSecondary }]}>
                       {exp.categoryNom}{exp.date ? ` · ${dateLabel(exp.date)}` : ''}
                     </Text>
                   </View>
-                  <Text style={styles.activityAmount}>
-                    -{formatFCFA(exp.montant)}
-                  </Text>
+                  <Text style={s.activityAmount}>-{formatFCFA(exp.montant)}</Text>
                 </View>
               ))}
             </View>
@@ -251,126 +215,47 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F5F5F7' },
-
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Layout.screenPaddingHorizontal,
-    paddingTop: 18, paddingBottom: 14,
-  },
-  greeting: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+const s = StyleSheet.create({
+  safe: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Layout.screenPaddingHorizontal, paddingTop: 18, paddingBottom: 14 },
+  greeting: { fontSize: 20, fontWeight: '700' },
   headerActions: { flexDirection: 'row', gap: 8 },
-  headerBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center',
-    ...Shadows.card, position: 'relative',
-  },
-  notifBadge: {
-    position: 'absolute', top: -2, right: -2,
-    minWidth: 16, height: 16, borderRadius: 8,
-    backgroundColor: Colors.danger, alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
+  headerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', ...Shadows.card, position: 'relative' },
+  notifBadge: { position: 'absolute', top: -2, right: -2, minWidth: 16, height: 16, borderRadius: 8, backgroundColor: Colors.danger, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   notifBadgeText: { fontSize: 9, fontWeight: '700', color: Colors.white },
-
-  /* ── Hero Card ── */
-  heroCard: {
-    marginHorizontal: Layout.screenPaddingHorizontal,
-    borderRadius: 20,
-    padding: 22,
-    gap: 10,
-  },
-  heroLabel: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.65)',
-    fontWeight: '500',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  heroRestant: {
-    fontSize: 42,
-    fontWeight: '800',
-    color: Colors.white,
-    letterSpacing: -1,
-    lineHeight: 48,
-  },
-  heroSurTotal: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.55)',
-    marginTop: -4,
-  },
-  heroBarTrack: {
-    height: 6,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 99,
-    overflow: 'hidden',
-    marginTop: 4,
-  },
+  heroCard: { marginHorizontal: Layout.screenPaddingHorizontal, borderRadius: 20, padding: 22, gap: 10 },
+  heroLabel: { fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: '500', letterSpacing: 0.3, textTransform: 'uppercase' },
+  heroRestant: { fontSize: 42, fontWeight: '800', color: Colors.white, letterSpacing: -1, lineHeight: 48 },
+  heroSurTotal: { fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: -4 },
+  heroBarTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 99, overflow: 'hidden', marginTop: 4 },
   heroBarFill: { height: '100%', borderRadius: 99 },
-  heroBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
+  heroBottom: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
   heroStat: { gap: 2 },
   heroStatLabel: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '500' },
   heroStatValue: { fontSize: 15, fontWeight: '700', color: Colors.white },
-
-  /* Setup card */
-  setupCard: {
-    marginHorizontal: Layout.screenPaddingHorizontal,
-    backgroundColor: Colors.white, borderRadius: 20,
-    padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16,
-    ...Shadows.card,
-  },
-  setupTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
-  setupSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
-
-  /* Sections */
+  setupCard: { marginHorizontal: Layout.screenPaddingHorizontal, borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16, ...Shadows.card },
+  setupTitle: { fontSize: 15, fontWeight: '600' },
+  setupSub: { fontSize: 13, marginTop: 2 },
   section: { marginTop: 24, paddingHorizontal: Layout.screenPaddingHorizontal, gap: 12 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  sectionTitle: { fontSize: 16, fontWeight: '700' },
   seeAll: { fontSize: 13, color: Colors.primary, fontWeight: '500' },
-
-  /* Zones horizontales */
   zonesRow: { flexDirection: 'row', gap: 10, paddingRight: Layout.screenPaddingHorizontal },
-  zoneChip: {
-    width: 100,
-    backgroundColor: Colors.white,
-    borderRadius: Radius.card,
-    padding: 12,
-    gap: 6,
-    ...Shadows.card,
-  },
+  zoneChip: { width: 100, borderRadius: Radius.card, padding: 12, gap: 6, ...Shadows.card },
   zoneChipIcon: { fontSize: 22 },
-  zoneChipName: { fontSize: 12, fontWeight: '600', color: Colors.textPrimary },
-  zoneChipBar: { height: 4, backgroundColor: '#E8F5EE', borderRadius: 99, overflow: 'hidden' },
+  zoneChipName: { fontSize: 12, fontWeight: '600' },
+  zoneChipBar: { height: 4, borderRadius: 99, overflow: 'hidden' },
   zoneChipFill: { height: '100%', borderRadius: 99 },
-  zoneChipAmt: { fontSize: 11, fontWeight: '700', color: Colors.textSecondary },
-
-  /* Activités récentes */
-  activityCard: {
-    backgroundColor: Colors.white,
-    borderRadius: Radius.card,
-    overflow: 'hidden',
-    ...Shadows.card,
-  },
-  activityRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14,
-  },
-  activityBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  activityIconBg: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: Colors.accent, alignItems: 'center', justifyContent: 'center',
-  },
+  zoneChipAmt: { fontSize: 11, fontWeight: '700' },
+  activityCard: { borderRadius: Radius.card, overflow: 'hidden', ...Shadows.card },
+  activityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  activityBorder: { borderBottomWidth: 1 },
+  activityIconBg: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   activityEmoji: { fontSize: 18 },
   activityMeta: { flex: 1, gap: 3 },
-  activityDesc: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  activitySub: { fontSize: 12, color: Colors.textSecondary },
+  activityDesc: { fontSize: 14, fontWeight: '600' },
+  activitySub: { fontSize: 12 },
   activityAmount: { fontSize: 14, fontWeight: '700', color: Colors.danger },
-
   emptyActivity: { alignItems: 'center', paddingVertical: 32, gap: 8 },
-  emptyActivityText: { fontSize: 13, color: Colors.textSecondary },
+  emptyActivityText: { fontSize: 13 },
 });

@@ -58,7 +58,9 @@ export default {
     spent: 'Dépensé',
     alloc: 'Alloué',
     noZones: 'Aucune zone créée',
-    noZonesSub: 'Ajoutez des catégories pour gérer votre budget',
+    noZonesSub: 'Appuyez sur + pour créer votre première zone',
+    aiAnalyze: "Analyser avec l'IA ✨",
+    aiSub: 'Génère ton budget automatiquement',
   },
   pay: {
     title: 'Payer',

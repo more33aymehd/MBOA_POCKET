@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { categoryService } from '../../services/categoryService';
 import { formatFCFA } from '../../utils/format';
 import { useFocusEffect } from '@react-navigation/native';
@@ -22,6 +23,7 @@ const METHODS = [
 export default function PayScreen({ navigation }) {
   const { token } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState(null);
@@ -164,51 +166,51 @@ export default function PayScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F5F5F7' },
+  safe: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     paddingVertical: 14, paddingHorizontal: Layout.screenPaddingHorizontal,
-    backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
+    backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
     position: 'relative',
   },
-  title: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+  title: { fontSize: 20, fontWeight: '700', color: colors.text },
   scanBtn: {
     position: 'absolute', right: Layout.screenPaddingHorizontal,
     width: 40, height: 40, borderRadius: 12,
     backgroundColor: Colors.accent, alignItems: 'center', justifyContent: 'center',
   },
   scroll: { paddingBottom: 24 },
-  section: { backgroundColor: Colors.white, padding: Layout.screenPaddingHorizontal, marginBottom: 8, gap: 10 },
-  sectionTitle: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-  sectionSub: { fontSize: 13, color: Colors.textSecondary, marginTop: -4 },
+  section: { backgroundColor: colors.card, padding: Layout.screenPaddingHorizontal, marginBottom: 8, gap: 10 },
+  sectionTitle: { fontSize: 15, fontWeight: '500', color: colors.text },
+  sectionSub: { fontSize: 13, color: colors.textSecondary, marginTop: -4 },
   chipsRow: { flexDirection: 'row', gap: 8, paddingBottom: 4 },
   chip: {
     alignItems: 'center', gap: 2, borderRadius: 14,
     padding: 10, paddingHorizontal: 12,
-    backgroundColor: Colors.surfaceCard, borderWidth: 1, borderColor: '#E5E7EB',
+    backgroundColor: Colors.surfaceCard, borderWidth: 1, borderColor: colors.border,
   },
   chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   chipEmoji: { fontSize: 18 },
-  chipName: { fontSize: 12, fontWeight: '500', color: Colors.textPrimary },
+  chipName: { fontSize: 12, fontWeight: '500', color: colors.text },
   chipNameActive: { color: Colors.white },
-  chipAmt: { fontSize: 10, fontWeight: '700', color: Colors.textSecondary },
+  chipAmt: { fontSize: 10, fontWeight: '700', color: colors.textSecondary },
   chipAmtActive: { color: 'rgba(255,255,255,0.8)' },
   input: {
     height: Layout.inputHeight, backgroundColor: Colors.surfaceCard,
-    borderRadius: Radius.input, borderWidth: 1, borderColor: '#E5E7EB',
-    paddingHorizontal: 16, fontSize: 15, color: Colors.textPrimary,
+    borderRadius: Radius.input, borderWidth: 1, borderColor: colors.border,
+    paddingHorizontal: 16, fontSize: 15, color: colors.text,
   },
   methodsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   methodCard: {
-    width: '47%', backgroundColor: Colors.white,
+    width: '47%', backgroundColor: colors.card,
     borderRadius: Radius.card, padding: 14, gap: 8,
-    borderWidth: 1, borderColor: '#E5E7EB', ...Shadows.card,
+    borderWidth: 1, borderColor: colors.border, ...Shadows.card,
   },
   methodCardActive: { borderColor: Colors.primary, borderWidth: 2 },
   methodIconBg: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  methodName: { fontSize: 14, fontWeight: '500', color: Colors.textPrimary },
-  methodDesc: { fontSize: 12, color: Colors.textSecondary },
-  bottom: { padding: Layout.screenPaddingHorizontal, backgroundColor: Colors.white },
+  methodName: { fontSize: 14, fontWeight: '500', color: colors.text },
+  methodDesc: { fontSize: 12, color: colors.textSecondary },
+  bottom: { padding: Layout.screenPaddingHorizontal, backgroundColor: colors.card },
   btn: {
     height: Layout.buttonHeight, backgroundColor: Colors.primary,
     borderRadius: Radius.button, alignItems: 'center', justifyContent: 'center',
