@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, ActivityIndicator, Alert,
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
-import KeyboardLayout from '../../components/KeyboardLayout';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
+  const { isLandscape } = useResponsive();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -33,95 +35,151 @@ export default function LoginScreen({ navigation }) {
     }
   }
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardLayout>
-        <View style={styles.inner}>
-          {/* Logo */}
-          <View style={styles.logoArea}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoLetter}>M</Text>
-            </View>
-            <Text style={styles.title}>Bon retour 👋</Text>
-            <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
-          </View>
+  const branding = (
+    <View style={[styles.branding, isLandscape && styles.brandingLandscape]}>
+      <View style={styles.logoBox}>
+        <Text style={styles.logoLetter}>M</Text>
+      </View>
+      <Text style={styles.appName}>Mboapocket</Text>
+      {!isLandscape && <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>}
+    </View>
+  );
 
-          {/* Formulaire */}
-          <View style={styles.form}>
-            <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="email@exemple.com"
-                placeholderTextColor={Colors.textSecondary}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                returnKeyType="next"
-              />
-            </View>
+  const form = (
+    <View style={styles.form}>
+      {isLandscape && (
+        <Text style={styles.titleLandscape}>Bon retour 👋</Text>
+      )}
+      {!isLandscape && (
+        <Text style={styles.title}>Bon retour 👋</Text>
+      )}
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Mot de passe</Text>
-              <View style={styles.pwdRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Entrez votre mot de passe"
-                  placeholderTextColor={Colors.textSecondary}
-                  secureTextEntry={!showPwd}
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                />
-                <TouchableOpacity onPress={() => setShowPwd(!showPwd)} style={styles.eyeBtn}>
-                  <MaterialCommunityIcons name={showPwd ? 'eye-off' : 'eye'} size={20} color={Colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity style={styles.forgotRow}>
-                <Text style={styles.forgot}>Mot de passe oublié ?</Text>
-              </TouchableOpacity>
-            </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="email@exemple.com"
+          placeholderTextColor={Colors.textSecondary}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+        />
+      </View>
 
-            <TouchableOpacity style={[styles.btn, loading && { opacity: 0.7 }]} onPress={handleLogin} disabled={loading}>
-              {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.btnLabel}>Se connecter</Text>}
-            </TouchableOpacity>
-
-            <View style={styles.orRow}>
-              <View style={styles.line} /><Text style={styles.orText}>ou</Text><View style={styles.line} />
-            </View>
-
-            <TouchableOpacity style={styles.socialBtn}>
-              <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
-              <Text style={styles.socialLabel}>Continuer avec Google</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.registerRow}>
-            <Text style={styles.registerText}>Pas encore de compte ? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.registerLink}>S'inscrire</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Mot de passe</Text>
+        <View style={styles.pwdRow}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Entrez votre mot de passe"
+            placeholderTextColor={Colors.textSecondary}
+            secureTextEntry={!showPwd}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+          />
+          <TouchableOpacity onPress={() => setShowPwd(!showPwd)} style={styles.eyeBtn}>
+            <MaterialCommunityIcons name={showPwd ? 'eye-off' : 'eye'} size={20} color={Colors.textSecondary} />
+          </TouchableOpacity>
         </View>
-      </KeyboardLayout>
+        <TouchableOpacity style={styles.forgotRow}>
+          <Text style={styles.forgot}>Mot de passe oublié ?</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={[styles.btn, loading && { opacity: 0.7 }]} onPress={handleLogin} disabled={loading}>
+        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.btnLabel}>Se connecter</Text>}
+      </TouchableOpacity>
+
+      <View style={styles.orRow}>
+        <View style={styles.line} /><Text style={styles.orText}>ou</Text><View style={styles.line} />
+      </View>
+
+      <TouchableOpacity style={styles.socialBtn}>
+        <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
+        <Text style={styles.socialLabel}>Continuer avec Google</Text>
+      </TouchableOpacity>
+
+      <View style={styles.registerRow}>
+        <Text style={styles.registerText}>Pas encore de compte ? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <Text style={styles.registerLink}>S'inscrire</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {isLandscape ? (
+          <View style={styles.landscapeContainer}>
+            {branding}
+            <ScrollView
+              style={styles.flex}
+              contentContainerStyle={styles.landscapeScroll}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}>
+              {form}
+            </ScrollView>
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.portraitScroll}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
+            {branding}
+            {form}
+          </ScrollView>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.white },
-  inner: { flex: 1, paddingHorizontal: Layout.screenPaddingHorizontal, paddingTop: 40 },
-  logoArea: { alignItems: 'center', gap: 8, marginBottom: 36 },
+  flex: { flex: 1 },
+
+  portraitScroll: {
+    flexGrow: 1,
+    paddingHorizontal: Layout.screenPaddingHorizontal,
+    paddingTop: 40, paddingBottom: 40,
+    gap: 32,
+  },
+
+  landscapeContainer: { flex: 1, flexDirection: 'row' },
+  landscapeScroll: {
+    flexGrow: 1, justifyContent: 'center',
+    paddingHorizontal: 24, paddingVertical: 16,
+  },
+
+  branding: { alignItems: 'center', gap: 8 },
+  brandingLandscape: {
+    width: '38%',
+    backgroundColor: Colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 24,
+  },
+
   logoBox: {
     width: 56, height: 56, borderRadius: 16,
     backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
   },
   logoLetter: { fontSize: 24, fontWeight: '800', color: Colors.white },
-  title: { fontSize: 26, fontWeight: '700', color: Colors.textPrimary },
+  appName: { fontSize: 20, fontWeight: '800', color: Colors.primary },
+  title: { fontSize: 26, fontWeight: '700', color: Colors.textPrimary, textAlign: 'center' },
+  titleLandscape: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: 14, color: Colors.textSecondary },
-  form: { gap: 20 },
+
+  form: { gap: 16 },
   field: { gap: 6 },
   label: { fontSize: 13, fontWeight: '500', color: Colors.textPrimary },
   input: {
@@ -152,7 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
   },
   socialLabel: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-  registerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 28 },
+  registerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
   registerText: { fontSize: 14, color: Colors.textSecondary },
   registerLink: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
 });

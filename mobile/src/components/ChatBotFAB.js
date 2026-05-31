@@ -2,8 +2,9 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Modal,
   TextInput, FlatList, ActivityIndicator, KeyboardAvoidingView,
-  Platform, SafeAreaView,
+  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Shadows } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';

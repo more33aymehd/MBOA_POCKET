@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, ActivityIndicator, Alert,
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
-import KeyboardLayout from '../../components/KeyboardLayout';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const FIELDS = [
-  { key: 'nom',       label: 'Nom complet',     placeholder: 'Entrez votre nom',      keyboard: 'default',       auto: 'words' },
-  { key: 'email',     label: 'Email',            placeholder: 'email@exemple.com',     keyboard: 'email-address', auto: 'none' },
-  { key: 'telephone', label: 'Téléphone',        placeholder: '+237 6XX XXX XXX',      keyboard: 'phone-pad',     auto: 'none' },
-  { key: 'password',  label: 'Mot de passe',     placeholder: 'Minimum 8 caractères', keyboard: 'default',       auto: 'none', secure: true },
-  { key: 'confirm',   label: 'Confirmer mot de passe', placeholder: 'Confirmez le mot de passe', keyboard: 'default', auto: 'none', secure: true },
+  { key: 'nom',       label: 'Nom complet',            placeholder: 'Entrez votre nom',       keyboard: 'default',       auto: 'words' },
+  { key: 'email',     label: 'Email',                  placeholder: 'email@exemple.com',       keyboard: 'email-address', auto: 'none' },
+  { key: 'telephone', label: 'Téléphone',              placeholder: '+237 6XX XXX XXX',        keyboard: 'phone-pad',     auto: 'none' },
+  { key: 'password',  label: 'Mot de passe',           placeholder: 'Minimum 8 caractères',   keyboard: 'default',       auto: 'none', secure: true },
+  { key: 'confirm',   label: 'Confirmer mot de passe', placeholder: 'Confirmez le mot de passe', keyboard: 'default',    auto: 'none', secure: true },
 ];
 
 export default function RegisterScreen({ navigation }) {
   const { login } = useAuth();
+  const { isLandscape } = useResponsive();
   const [form, setForm] = useState({ nom: '', email: '', telephone: '', password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
 
@@ -51,66 +53,118 @@ export default function RegisterScreen({ navigation }) {
     }
   }
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardLayout>
-        <View style={styles.inner}>
-          <View style={styles.logoArea}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoLetter}>M</Text>
-            </View>
-            <Text style={styles.title}>Créer un compte</Text>
-            <Text style={styles.subtitle}>Rejoignez la communauté Mboapocket</Text>
-          </View>
+  const branding = (
+    <View style={[styles.branding, isLandscape && styles.brandingLandscape]}>
+      <View style={styles.logoBox}>
+        <Text style={styles.logoLetter}>M</Text>
+      </View>
+      <Text style={styles.appName}>Mboapocket</Text>
+      {isLandscape && <Text style={styles.tagline}>Votre argent,{'\n'}votre communauté</Text>}
+    </View>
+  );
 
-          <View style={styles.form}>
-            {FIELDS.map(f => (
-              <View key={f.key} style={styles.field}>
-                <Text style={styles.label}>{f.label}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={form[f.key]}
-                  onChangeText={v => set(f.key, v)}
-                  placeholder={f.placeholder}
-                  placeholderTextColor={Colors.textSecondary}
-                  keyboardType={f.keyboard}
-                  autoCapitalize={f.auto}
-                  secureTextEntry={!!f.secure}
-                  returnKeyType="next"
-                />
-              </View>
-            ))}
+  const formContent = (
+    <View style={styles.form}>
+      <Text style={styles.title}>Créer un compte</Text>
+      <Text style={styles.subtitle}>Rejoignez la communauté Mboapocket</Text>
 
-            <TouchableOpacity style={[styles.btn, loading && { opacity: 0.7 }]} onPress={handleRegister} disabled={loading}>
-              {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.btnLabel}>S'inscrire</Text>}
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.loginRow}>
-            <Text style={styles.loginText}>Déjà un compte ? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>Se connecter</Text>
-            </TouchableOpacity>
-          </View>
+      {FIELDS.map(f => (
+        <View key={f.key} style={styles.field}>
+          <Text style={styles.label}>{f.label}</Text>
+          <TextInput
+            style={styles.input}
+            value={form[f.key]}
+            onChangeText={v => set(f.key, v)}
+            placeholder={f.placeholder}
+            placeholderTextColor={Colors.textSecondary}
+            keyboardType={f.keyboard}
+            autoCapitalize={f.auto}
+            secureTextEntry={!!f.secure}
+            returnKeyType="next"
+          />
         </View>
-      </KeyboardLayout>
+      ))}
+
+      <TouchableOpacity style={[styles.btn, loading && { opacity: 0.7 }]} onPress={handleRegister} disabled={loading}>
+        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.btnLabel}>S'inscrire</Text>}
+      </TouchableOpacity>
+
+      <View style={styles.loginRow}>
+        <Text style={styles.loginText}>Déjà un compte ? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.loginLink}>Se connecter</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {isLandscape ? (
+          <View style={styles.landscapeContainer}>
+            {branding}
+            <ScrollView
+              style={styles.flex}
+              contentContainerStyle={styles.landscapeScroll}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}>
+              {formContent}
+            </ScrollView>
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.portraitScroll}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
+            {branding}
+            {formContent}
+          </ScrollView>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.white },
-  inner: { flex: 1, paddingHorizontal: Layout.screenPaddingHorizontal, paddingTop: 40 },
-  logoArea: { alignItems: 'center', gap: 8, marginBottom: 32 },
+  flex: { flex: 1 },
+
+  portraitScroll: {
+    flexGrow: 1,
+    paddingHorizontal: Layout.screenPaddingHorizontal,
+    paddingTop: 36, paddingBottom: 40,
+    gap: 24,
+  },
+
+  landscapeContainer: { flex: 1, flexDirection: 'row' },
+  landscapeScroll: {
+    flexGrow: 1, justifyContent: 'center',
+    paddingHorizontal: 24, paddingVertical: 16,
+  },
+
+  branding: { alignItems: 'center', gap: 8 },
+  brandingLandscape: {
+    width: '38%',
+    backgroundColor: Colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+    gap: 12, paddingHorizontal: 24,
+  },
   logoBox: {
     width: 56, height: 56, borderRadius: 16,
     backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
   },
   logoLetter: { fontSize: 24, fontWeight: '800', color: Colors.white },
-  title: { fontSize: 26, fontWeight: '700', color: Colors.textPrimary },
-  subtitle: { fontSize: 14, color: Colors.textSecondary },
-  form: { gap: 16 },
-  field: { gap: 6 },
+  appName: { fontSize: 20, fontWeight: '800', color: Colors.primary },
+  tagline: {
+    fontSize: 14, color: Colors.textSecondary,
+    textAlign: 'center', lineHeight: 20,
+  },
+
+  form: { gap: 14 },
+  title: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
+  subtitle: { fontSize: 13, color: Colors.textSecondary, marginBottom: 4 },
+  field: { gap: 5 },
   label: { fontSize: 13, fontWeight: '500', color: Colors.textPrimary },
   input: {
     height: Layout.inputHeight, backgroundColor: Colors.surfaceCard,
@@ -120,10 +174,10 @@ const styles = StyleSheet.create({
   btn: {
     height: Layout.buttonHeight, backgroundColor: Colors.primary,
     borderRadius: Radius.button, alignItems: 'center', justifyContent: 'center',
-    marginTop: 8, ...Shadows.button,
+    marginTop: 4, ...Shadows.button,
   },
   btnLabel: { color: Colors.white, fontSize: 16, fontWeight: '600' },
-  loginRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
+  loginRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
   loginText: { fontSize: 14, color: Colors.textSecondary },
   loginLink: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
 });
