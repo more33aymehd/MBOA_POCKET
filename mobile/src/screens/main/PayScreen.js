@@ -1,29 +1,24 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  ScrollView, TextInput, Alert,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Radius, Layout, Shadows } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useLanguage } from '../../context/LanguageContext';
 import { categoryService } from '../../services/categoryService';
 import { formatFCFA } from '../../utils/format';
 import { useFocusEffect } from '@react-navigation/native';
 
 const METHODS = [
-  { id: 'ORANGE_MONEY', label: 'Orange Money', desc: 'Paiement mobile', color: '#FF6B00', icon: '🟠' },
-  { id: 'MTN_MOMO', label: 'MTN MoMo', desc: 'Paiement mobile', color: '#FFC200', icon: '🟡' },
-  { id: 'CASH', label: 'Cash', desc: 'Rappel fin de journée', color: '#6B7280', icon: '💵' },
-  { id: 'MOCK', label: '🧪 Simulateur', desc: 'Test sans vrai paiement', color: Colors.primary, icon: '🧪' },
+  { id: 'ORANGE_MONEY', label: 'Orange Money', desc: 'Paiement mobile',      color: '#FF6B00', icon: '🟠' },
+  { id: 'MTN_MOMO',    label: 'MTN MoMo',     desc: 'Paiement mobile',      color: '#FFC200', icon: '🟡' },
+  { id: 'CASH',        label: 'Cash',          desc: 'Rappel fin de journée', color: '#6B7280', icon: '💵' },
+  { id: 'MOCK',        label: '🧪 Simulateur', desc: 'Test sans vrai paiement', color: Colors.primary, icon: '🧪' },
 ];
 
 export default function PayScreen({ navigation }) {
   const { token } = useAuth();
   const { colors } = useTheme();
-  const { t } = useLanguage();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState(null);
@@ -40,9 +35,8 @@ export default function PayScreen({ navigation }) {
     if (!selectedCategory) return Alert.alert('Zone requise', 'Sélectionnez une zone de dépense.');
     if (!selectedMethod) return Alert.alert('Méthode requise', 'Choisissez un moyen de paiement.');
     if (isNaN(m) || m <= 0) return Alert.alert('Montant invalide', 'Entrez un montant valide.');
-    if ((selectedMethod === 'ORANGE_MONEY' || selectedMethod === 'MTN_MOMO') && !phoneFrom.trim()) {
+    if ((selectedMethod === 'ORANGE_MONEY' || selectedMethod === 'MTN_MOMO') && !phoneFrom.trim())
       return Alert.alert('Téléphone requis', 'Entrez votre numéro mobile money.');
-    }
     navigation.navigate('Confirmation', {
       categoryId: String(selectedCategory.id),
       categoryNom: selectedCategory.nom,
@@ -56,11 +50,12 @@ export default function PayScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Effectuer un paiement</Text>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[s.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+        <Text style={[s.title, { color: colors.text }]}>Effectuer un paiement</Text>
         <TouchableOpacity
-          style={styles.scanBtn}
+          style={[s.scanBtn, { backgroundColor: colors.accent ?? Colors.accent }]}
           onPress={() => navigation.navigate('Scanner', {
             categoryId: selectedCategory ? String(selectedCategory.id) : '',
             categoryNom: selectedCategory?.nom ?? '',
@@ -71,23 +66,26 @@ export default function PayScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Zone de dépense</Text>
-          <Text style={styles.sectionSub}>Sur quel budget imputer ce paiement ?</Text>
+        {/* Zone */}
+        <View style={[s.section, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Zone de dépense</Text>
+          <Text style={[s.sectionSub, { color: colors.textSecondary }]}>Sur quel budget imputer ce paiement ?</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.chipsRow}>
+            <View style={s.chipsRow}>
               {categories.map(cat => {
                 const active = selectedCategory?.id === cat.id;
                 return (
                   <TouchableOpacity
                     key={cat.id}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[s.chip, { backgroundColor: colors.inputBg, borderColor: colors.border }, active && s.chipActive]}
                     onPress={() => setSelectedCategory(cat)}>
-                    <Text style={styles.chipEmoji}>{cat.icone}</Text>
-                    <Text style={[styles.chipName, active && styles.chipNameActive]}>{cat.nom}</Text>
-                    <Text style={[styles.chipAmt, active && styles.chipAmtActive]}>{formatFCFA(cat.montantRestant ?? 0)}</Text>
+                    <Text style={s.chipEmoji}>{cat.icone}</Text>
+                    <Text style={[s.chipName, { color: active ? Colors.white : colors.text }]}>{cat.nom}</Text>
+                    <Text style={[s.chipAmt, { color: active ? 'rgba(255,255,255,0.8)' : colors.textSecondary }]}>
+                      {formatFCFA(cat.montantRestant ?? 0)}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -95,126 +93,100 @@ export default function PayScreen({ navigation }) {
           </ScrollView>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Montant (FCFA)</Text>
+        {/* Montant */}
+        <View style={[s.section, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Montant (FCFA)</Text>
           <TextInput
-            style={styles.input}
-            value={montant}
-            onChangeText={setMontant}
-            keyboardType="numeric"
-            placeholder="0"
-            placeholderTextColor={Colors.textSecondary}
+            style={[s.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+            value={montant} onChangeText={setMontant}
+            keyboardType="numeric" placeholder="0"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Nom du marchand (optionnel)</Text>
+        {/* Marchand */}
+        <View style={[s.section, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Nom du marchand (optionnel)</Text>
           <TextInput
-            style={styles.input}
-            value={merchantName}
-            onChangeText={setMerchantName}
+            style={[s.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+            value={merchantName} onChangeText={setMerchantName}
             placeholder="Ex: Chez Paul Restaurant"
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Comment voulez-vous payer ?</Text>
-          <View style={styles.methodsGrid}>
+        {/* Méthode */}
+        <View style={[s.section, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Comment voulez-vous payer ?</Text>
+          <View style={s.methodsGrid}>
             {METHODS.map(m => {
               const active = selectedMethod === m.id;
               return (
                 <TouchableOpacity
                   key={m.id}
-                  style={[styles.methodCard, active && styles.methodCardActive]}
+                  style={[s.methodCard, { backgroundColor: colors.card, borderColor: active ? Colors.primary : colors.border }, active && s.methodCardActive]}
                   onPress={() => setSelectedMethod(m.id)}>
-                  <View style={[styles.methodIconBg, { backgroundColor: m.color + '20' }]}>
+                  <View style={[s.methodIconBg, { backgroundColor: m.color + '20' }]}>
                     <Text style={{ fontSize: 20 }}>{m.icon}</Text>
                   </View>
-                  <Text style={styles.methodName}>{m.label}</Text>
-                  <Text style={styles.methodDesc}>{m.desc}</Text>
+                  <Text style={[s.methodName, { color: colors.text }]}>{m.label}</Text>
+                  <Text style={[s.methodDesc, { color: colors.textSecondary }]}>{m.desc}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
 
+        {/* Téléphone */}
         {(selectedMethod === 'ORANGE_MONEY' || selectedMethod === 'MTN_MOMO') && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+          <View style={[s.section, { backgroundColor: colors.card }]}>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>
               Votre numéro {selectedMethod === 'ORANGE_MONEY' ? 'Orange' : 'MTN'}
             </Text>
             <TextInput
-              style={styles.input}
-              value={phoneFrom}
-              onChangeText={setPhoneFrom}
+              style={[s.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+              value={phoneFrom} onChangeText={setPhoneFrom}
               placeholder="237690000000"
-              placeholderTextColor={Colors.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               keyboardType="phone-pad"
             />
           </View>
         )}
       </ScrollView>
 
-      <View style={styles.bottom}>
-        <TouchableOpacity style={styles.btn} onPress={handleContinuer}>
-          <Text style={styles.btnLabel}>Continuer</Text>
+      {/* CTA */}
+      <View style={[s.bottom, { backgroundColor: colors.card, borderTopColor: colors.borderLight }]}>
+        <TouchableOpacity style={s.btn} onPress={handleContinuer}>
+          <Text style={s.btnLabel}>Continuer</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F5F5F7' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14, paddingHorizontal: Layout.screenPaddingHorizontal,
-    backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
-    position: 'relative',
-  },
-  title: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
-  scanBtn: {
-    position: 'absolute', right: Layout.screenPaddingHorizontal,
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: Colors.accent, alignItems: 'center', justifyContent: 'center',
-  },
+const s = StyleSheet.create({
+  safe: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, paddingHorizontal: Layout.screenPaddingHorizontal, borderBottomWidth: 1, position: 'relative' },
+  title: { fontSize: 20, fontWeight: '700' },
+  scanBtn: { position: 'absolute', right: Layout.screenPaddingHorizontal, width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   scroll: { paddingBottom: 24 },
-  section: { backgroundColor: '#FFFFFF', padding: Layout.screenPaddingHorizontal, marginBottom: 8, gap: 10 },
-  sectionTitle: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-  sectionSub: { fontSize: 13, color: Colors.textPrimarySecondary, marginTop: -4 },
+  section: { padding: Layout.screenPaddingHorizontal, marginBottom: 8, gap: 10 },
+  sectionTitle: { fontSize: 15, fontWeight: '500' },
+  sectionSub: { fontSize: 13, marginTop: -4 },
   chipsRow: { flexDirection: 'row', gap: 8, paddingBottom: 4 },
-  chip: {
-    alignItems: 'center', gap: 2, borderRadius: 14,
-    padding: 10, paddingHorizontal: 12,
-    backgroundColor: Colors.surfaceCard, borderWidth: 1, borderColor: '#E5E7EB',
-  },
+  chip: { alignItems: 'center', gap: 2, borderRadius: 14, padding: 10, paddingHorizontal: 12, borderWidth: 1 },
   chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   chipEmoji: { fontSize: 18 },
-  chipName: { fontSize: 12, fontWeight: '500', color: Colors.textPrimary },
-  chipNameActive: { color: Colors.white },
-  chipAmt: { fontSize: 10, fontWeight: '700', color: Colors.textPrimarySecondary },
-  chipAmtActive: { color: 'rgba(255,255,255,0.8)' },
-  input: {
-    height: Layout.inputHeight, backgroundColor: Colors.surfaceCard,
-    borderRadius: Radius.input, borderWidth: 1, borderColor: '#E5E7EB',
-    paddingHorizontal: 16, fontSize: 15, color: Colors.textPrimary,
-  },
+  chipName: { fontSize: 12, fontWeight: '500' },
+  chipAmt: { fontSize: 10, fontWeight: '700' },
+  input: { height: Layout.inputHeight, borderRadius: Radius.input, borderWidth: 1, paddingHorizontal: 16, fontSize: 15 },
   methodsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  methodCard: {
-    width: '47%', backgroundColor: '#FFFFFF',
-    borderRadius: Radius.card, padding: 14, gap: 8,
-    borderWidth: 1, borderColor: '#E5E7EB', ...Shadows.card,
-  },
-  methodCardActive: { borderColor: Colors.primary, borderWidth: 2 },
+  methodCard: { width: '47%', borderRadius: Radius.card, padding: 14, gap: 8, borderWidth: 1, ...Shadows.card },
+  methodCardActive: { borderWidth: 2 },
   methodIconBg: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  methodName: { fontSize: 14, fontWeight: '500', color: Colors.textPrimary },
-  methodDesc: { fontSize: 12, color: Colors.textPrimarySecondary },
-  bottom: { padding: Layout.screenPaddingHorizontal, backgroundColor: '#FFFFFF' },
-  btn: {
-    height: Layout.buttonHeight, backgroundColor: Colors.primary,
-    borderRadius: Radius.button, alignItems: 'center', justifyContent: 'center',
-    ...Shadows.button,
-  },
+  methodName: { fontSize: 14, fontWeight: '500' },
+  methodDesc: { fontSize: 12 },
+  bottom: { padding: Layout.screenPaddingHorizontal, borderTopWidth: 1 },
+  btn: { height: Layout.buttonHeight, backgroundColor: Colors.primary, borderRadius: Radius.button, alignItems: 'center', justifyContent: 'center', ...Shadows.button },
   btnLabel: { color: Colors.white, fontSize: 16, fontWeight: '500' },
 });
