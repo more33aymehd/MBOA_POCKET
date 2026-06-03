@@ -1,48 +1,23 @@
-# ── Node / React Native ──────────────────────────────────────────────
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.expo/
-.expo-shared/
-dist/
-web-build/
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
-
-# ── Java / Spring Boot ───────────────────────────────────────────────
+# Maven
 target/
 *.class
 *.jar
 *.war
-*.ear
-*.log
-.mvn/timing.properties
-!.mvn/wrapper/maven-wrapper.jar
 
-# ── Credentials (NE JAMAIS COMMITTER) ───────────────────────────────
-mboapocket_app/src/main/resources/application.properties
-*.env
-.env
-.env.*
-
-# ── IDE ──────────────────────────────────────────────────────────────
+# IDE
 .idea/
 *.iml
 .vscode/
-*.swp
-*.swo
+.eclipse/
 
-# ── OS ───────────────────────────────────────────────────────────────
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# ── Misc ─────────────────────────────────────────────────────────────
+# Logs
 *.log
 hs_err_pid*.log
-mboapocket_app/hs_err_pid*.log
+
+# Env
+.env
+application.properties
+
+# OS
+.DS_Store
+Thumbs.db
