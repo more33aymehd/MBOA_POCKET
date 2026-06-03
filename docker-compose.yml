@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+   mysql:
+      image: mysql:8.0
+      container_name: mboapocket_db
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: mboapocket_dev
+      ports:
+      - "3306:3306"
+    volumes:
+    - db_data:/var/lib/mysql
+    - ./schema.sql:/
+docker-entrypoint-initdb.d/schema.sql
+
+   backend
+      build:
+      container_name: mboapocket_backend
+      ports:
+      - "8080:8080"
+      depends_on:
+      -mysql
+    environment:
+      SPRING_DATASOURCE_URL:
+jdbc:mysql://mysql:3306/mboapocket_dev
+    SPRING_DATASOURCE_USERNAME: root
+    SPRING_DATASOURCE_PASSWORD: root
+
+  volumes:
+    db_data:
